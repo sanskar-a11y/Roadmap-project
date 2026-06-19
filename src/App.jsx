@@ -1,13 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Award,
-  BookOpen,
   CalendarDays,
   Check,
-  ChevronRight,
-  CirclePlay,
   Code2,
-  Clock3,
   Flame,
   FolderKanban,
   Gauge,
@@ -46,7 +42,6 @@ function App() {
     return Math.min(60, (initial.completed?.length || 0) + 1);
   });
   const [activeChapter, setActiveChapter] = useState("all");
-  const [videoOpen, setVideoOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
 
@@ -71,7 +66,6 @@ function App() {
 
   function selectDay(number) {
     setSelectedDay(number);
-    setVideoOpen(false);
     requestAnimationFrame(() => {
       document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
@@ -211,8 +205,28 @@ function App() {
               behind. Small daily proof beats passive watching.
             </p>
 
+            <div className="learning-block">
+              <p className="section-label">Learning content</p>
+              <p>{current.learning}</p>
+            </div>
+
+            <div className="daily-steps">
+              <p className="section-label">What to do today</p>
+              {current.steps.map((step, index) => (
+                <div className="daily-step" key={step.text}>
+                  <span>{index + 1}</span>
+                  <p>
+                    {step.text}
+                    <a href={step.video.url} target="_blank" rel="noreferrer">
+                      {step.video.url}
+                    </a>
+                  </p>
+                </div>
+              ))}
+            </div>
+
             <div className="objectives">
-              <p className="section-label">Mission objectives</p>
+              <p className="section-label">Proof to finish</p>
               {current.objectives.map((objective, index) => (
                 <div className="objective" key={objective}>
                   <span>{index + 1}</span>
@@ -229,38 +243,6 @@ function App() {
               {completedSet.has(current.number) ? "Mission completed" : "Complete mission"}
             </button>
           </article>
-
-          <aside className="learn-card">
-            <div className="video-preview">
-              <img
-                src={`https://i.ytimg.com/vi/${current.video.id}/hqdefault.jpg`}
-                alt=""
-              />
-              <button onClick={() => setVideoOpen(true)} aria-label={`Play ${current.video.title}`}>
-                <CirclePlay size={54} />
-              </button>
-              <span className="video-source">YouTube lesson</span>
-            </div>
-            <div className="learn-content">
-              <p className="section-label">Learn from the best</p>
-              <h3>{current.video.title}</h3>
-              <p>{current.video.creator}</p>
-              <div className="lesson-meta">
-                <span><Clock3 size={15} /> {current.video.length}</span>
-                <span><BookOpen size={15} /> Matched to this mission</span>
-              </div>
-              <button className="watch-button" onClick={() => setVideoOpen(true)}>
-                <Play size={17} fill="currentColor" /> Watch lesson
-              </button>
-              <a
-                href={`https://www.youtube.com/watch?v=${current.video.id}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open on YouTube <ChevronRight size={15} />
-              </a>
-            </div>
-          </aside>
         </section>
 
         <section className="dashboard-grid" id="projects">
@@ -295,7 +277,7 @@ function App() {
                 <button key={project.name} onClick={() => selectDay(project.day)}>
                   <i style={{ background: project.color }} />
                   <span><strong>{project.name}</strong><small>Milestone · Day {project.day}</small></span>
-                  {completedSet.has(project.day) ? <Check className="done" /> : <ChevronRight />}
+                  {completedSet.has(project.day) ? <Check className="done" /> : <span aria-hidden="true">›</span>}
                 </button>
               ))}
             </div>
@@ -319,10 +301,6 @@ function App() {
         <p>Built around your AI Automation Specialist roadmap.</p>
         <a href="https://github.com" target="_blank" rel="noreferrer"><Code2 size={17} /> Build in public</a>
       </footer>
-
-      {videoOpen ? (
-        <VideoModal video={current.video} onClose={() => setVideoOpen(false)} />
-      ) : null}
     </div>
   );
 }
@@ -367,33 +345,6 @@ function Stat({ icon, value, meta, accent = "" }) {
       {icon}
       <strong>{value}</strong>
       <span>{meta}</span>
-    </div>
-  );
-}
-
-function VideoModal({ video, onClose }) {
-  useEffect(() => {
-    const onKey = (event) => event.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
-      <div className="video-modal" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="modal-heading">
-          <div><strong>{video.title}</strong><span>{video.creator}</span></div>
-          <button onClick={onClose} aria-label="Close video"><X /></button>
-        </div>
-        <div className="video-frame">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      </div>
     </div>
   );
 }
